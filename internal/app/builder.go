@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
 	"github.com/isacikgoz/gitbatch/internal/gui"
 )
 
@@ -11,6 +14,7 @@ import (
 // it has only the gui.Gui pointer for interface entity.
 type App struct {
 	Config *Config
+	Log    zerolog.Logger
 }
 
 // Config is an assembler data to initiate a setup
@@ -36,6 +40,18 @@ func New(argConfig *Config) (*App, error) {
 		return nil, err
 	}
 	app.Config = overrideConfig(presetConfig, argConfig)
+
+	if argConfig.LogLevel == "error" {
+		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	} else if argConfig.LogLevel == "info" {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	} else if argConfig.LogLevel == "trace" {
+		zerolog.SetGlobalLevel(zerolog.TraceLevel)
+	} else if argConfig.LogLevel == "debug" {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
+	app.Log = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	return app, nil
 }
@@ -78,5 +94,5 @@ func (a *App) execQuickMode(directories []string) error {
 		return fmt.Errorf("unrecognized quick mode: " + a.Config.Mode)
 	}
 
-	return quick(directories, a.Config.Mode)
+	return quick(directories, a.Config.Mode, a.Log)
 }
