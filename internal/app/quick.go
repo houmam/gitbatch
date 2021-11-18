@@ -7,9 +7,10 @@ import (
 
 	"github.com/isacikgoz/gitbatch/internal/command"
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/rs/zerolog"
 )
 
-func quick(directories []string, mode string) error {
+func quick(directories []string, mode string, log zerolog.Logger) error {
 	var wg sync.WaitGroup
 	start := time.Now()
 	for _, dir := range directories {
@@ -17,9 +18,9 @@ func quick(directories []string, mode string) error {
 		go func(d string, mode string) {
 			defer wg.Done()
 			if err := operate(d, mode); err != nil {
-				fmt.Printf("could not perform %s on %s: %s", mode, d, err)
+				log.Error().Err(err).Msgf("could not perform %s on %s", mode, d)
 			}
-			fmt.Printf("%s: successful\n", d)
+			log.Info().Msgf("%s: successful", d)
 		}(dir, mode)
 	}
 	wg.Wait()
