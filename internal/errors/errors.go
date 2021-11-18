@@ -52,6 +52,16 @@ const (
 	ErrUnclassified GitError = ("unclassified error")
 	// NoErrIterationHalted is thrown for catching stops in interators
 	NoErrIterationHalted GitError = ("iteration halted")
+	// ErrNotCurrentlyOnABranch is thrown when not on a branch
+	ErrNotCurrentlyOnABranch GitError = ("not currently on a branch")
+	// ErrCannotLockRef is thrown when cannot get a lock ref
+	ErrCannotLockRef GitError = ("cannot lock ref")
+	// ErrNoSuchRefWasFetched is thrown when no such ref was fetched
+	ErrNoSuchRefWasFetched GitError = ("no such ref was fetched")
+	// ErrRefusingToMergeUnrelatedHistories is thrown when git refuses to merge unrelated histories
+	ErrRefusingToMergeUnrelatedHistories GitError = ("refusing to merge unrelated histories")
+	// ErrCouldNotReadFromRemoteRepository is thrown when remote repository is not readable
+	ErrCouldNotReadFromRemoteRepository GitError = ("could not read from remote repository")
 )
 
 func (e GitError) Error() string {
@@ -79,6 +89,17 @@ func ParseGitError(out string, err error) error {
 		return ErrPermissionDenied
 	} else if strings.Contains(out, "would be overwritten by merge") {
 		return ErrOverwrittenByMerge
+	} else if strings.Contains(out, "You are not currently on a branch") {
+		return ErrNotCurrentlyOnABranch
+	} else if strings.Contains(out, "update_ref failed for ref 'ORIG_HEAD': cannot lock ref 'ORIG_HEAD'") {
+		return ErrCannotLockRef
+	} else if strings.Contains(out, "from the remote, but no such ref was fetched") {
+		return ErrNoSuchRefWasFetched
+	} else if strings.Contains(out, "refusing to merge unrelated histories") {
+		return ErrRefusingToMergeUnrelatedHistories
+	} else if strings.Contains(out, "Could not read from remote repository") {
+		return ErrCouldNotReadFromRemoteRepository
 	}
+
 	return ErrUnclassified
 }
